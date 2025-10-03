@@ -1,29 +1,27 @@
-import fetch from 'node-fetch';
-
 export default async function handler(req, res) {
-    const { username } = req.query;
-    if (!username) return res.status(400).json({ error: "Username required" });
+  const { username, manualYap, manualPosts, manualReach } = req.query;
 
-    try {
-        const token = process.env.TWITTER_BEARER_TOKEN;
-        if(!token) return res.status(500).json({ error: "Twitter token missing" });
+  if (!username) return res.status(400).json({ error: "Username required" });
 
-        // Example fetch user (replace with real API call)
-        // const response = await fetch(`https://api.twitter.com/2/users/by/username/${username}`, {
-        //     headers: { Authorization: `Bearer ${token}` }
-        // });
-        // const data = await response.json();
+  // Manual override
+  if (manualYap || manualPosts || manualReach) {
+    return res.status(200).json({
+      username,
+      yap: Number(manualYap || 0),
+      posts: Number(manualPosts || 0),
+      reach: Number(manualReach || 0)
+    });
+  }
 
-        // Dummy stats for starter
-        const stats = {
-            username: username,
-            yap: Math.floor(Math.random()*20),
-            posts: Math.floor(Math.random()*15),
-            reach: Math.floor(Math.random()*100000)
-        };
+  // Mock data if no manual input
+  const mock = {
+    username,
+    yap: Math.floor(Math.random() * 30),
+    posts: Math.floor(Math.random() * 20),
+    reach: Math.floor(Math.random() * 200000),
+    mockSource: true
+  };
 
-        res.status(200).json(stats);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
+  res.status(200).json(mock);
 }
+
