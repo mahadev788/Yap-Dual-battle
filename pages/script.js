@@ -3,48 +3,55 @@ const result = document.getElementById('result');
 const note = document.getElementById('dataNote');
 const player1Div = document.getElementById('player1');
 const player2Div = document.getElementById('player2');
+const name1 = document.getElementById('name1');
+const name2 = document.getElementById('name2');
 
-async function fetchStats(username, manual = {}) {
+async function fetchStats(username, manual={}) {
   const qs = new URLSearchParams({ username, ...manual }).toString();
   const res = await fetch(`/api/getStats?${qs}`);
   return res.json();
 }
 
 compareBtn.addEventListener('click', async () => {
-  const user1 = document.getElementById('user1').value.trim();
-  const user2 = document.getElementById('user2').value.trim();
-  if(!user1 || !user2) return alert('Enter both usernames');
+  const u1 = document.getElementById('user1').value.trim();
+  const u2 = document.getElementById('user2').value.trim();
+  if(!u1 || !u2) return alert("Enter both usernames");
 
-  const stats1 = await fetchStats(user1, {
+  const s1 = await fetchStats(u1, {
     manualYap: document.getElementById('user1_yap').value,
     manualPosts: document.getElementById('user1_posts').value,
     manualReach: document.getElementById('user1_reach').value
   });
-  const stats2 = await fetchStats(user2, {
+
+  const s2 = await fetchStats(u2, {
     manualYap: document.getElementById('user2_yap').value,
     manualPosts: document.getElementById('user2_posts').value,
     manualReach: document.getElementById('user2_reach').value
   });
 
-  player1Div.querySelector('.score span').textContent = stats1.yap;
-  player2Div.querySelector('.score span').textContent = stats2.yap;
+  name1.textContent = s1.username;
+  name2.textContent = s2.username;
+
+  player1Div.querySelector('.stats p:nth-child(1) span').textContent = s1.yap;
+  player1Div.querySelector('.stats p:nth-child(2) span').textContent = s1.posts;
+  player1Div.querySelector('.stats p:nth-child(3) span').textContent = s1.reach;
+
+  player2Div.querySelector('.stats p:nth-child(1) span').textContent = s2.yap;
+  player2Div.querySelector('.stats p:nth-child(2) span').textContent = s2.posts;
+  player2Div.querySelector('.stats p:nth-child(3) span').textContent = s2.reach;
 
   player1Div.classList.remove('winner');
   player2Div.classList.remove('winner');
 
-  const score1 = (stats1.yap || 0)*3 + (stats1.posts || 0)*2 + (stats1.reach || 0)/1000;
-  const score2 = (stats2.yap || 0)*3 + (stats2.posts || 0)*2 + (stats2.reach || 0)/1000;
+  const score1 = (s1.yap*3 + s1.posts*2 + s1.reach/1000);
+  const score2 = (s2.yap*3 + s2.posts*2 + s2.reach/1000);
 
   let winner;
-  if(score1 > score2) { winner = user1; player1Div.classList.add('winner'); }
-  else if(score2 > score1) { winner = user2; player2Div.classList.add('winner'); }
-  else winner = 'Tie!';
+  if(score1>score2){ winner = s1.username; player1Div.classList.add('winner'); }
+  else if(score2>score1){ winner = s2.username; player2Div.classList.add('winner'); }
+  else winner = "Tie!";
 
   result.textContent = `${winner} Wins!`;
 
-  if(stats1.mockSource || stats2.mockSource) {
-    note.textContent = 'Showing demo/mock stats (no API token).';
-  } else {
-    note.textContent = '';
-  }
+  note.textContent = (s1.mockSource || s2.mockSource) ? "Showing demo/mock stats." : "";
 });
